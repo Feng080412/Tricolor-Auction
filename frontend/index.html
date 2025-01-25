@@ -37,6 +37,9 @@
         .nav-buttons button:hover {
             background-color: #001f4d; /* Darker shade of blue */
         }
+        .nav-buttons a {
+            text-decoration: none;
+        }
         .search-bar {
             flex-grow: 1;
             margin: 0 20px;
@@ -81,7 +84,9 @@
                 <button>Home</button> <!-- Link to the home page (index.html) -->
             </a>
             <button>Auctions</button>
-            <button>Sell an Item</button>
+            <a href="add_item.html">
+                <button>Sell an Item</button> <!-- Link to the Add Item form -->
+            </a>
             <button>Categories</button>
         </div>
         <div class="search-bar">
