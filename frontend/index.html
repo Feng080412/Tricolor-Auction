@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auction Website</title>
+    <title>Tricolour Auctions</title>
     <style>
         body {
             margin: 0;
@@ -72,22 +72,47 @@
         .login-section .btn:hover {
             background-color: #660000; /* Darker shade of red */
         }
+        /* Home page specific styles */
+        .home-content {
+            padding: 40px 20px;
+            text-align: center;
+            background-color: #f1f1f1;
+        }
+        .home-content h1 {
+            color: #003366; /* Dark blue from logo */
+        }
+        .home-content p {
+            font-size: 1.2em;
+            color: #333;
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        .home-content .btn {
+            background-color: #003366;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .home-content .btn:hover {
+            background-color: #001f4d;
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="logo">
-            <img src="Logo_Header.png" alt="Auction Logo"> <!-- Updated image name -->
+            <img src="Logo_Header.png" alt="Auction Logo">
         </div>
         <div class="nav-buttons">
             <a href="index.html">
-                <button>Home</button> <!-- Link to the home page (index.html) -->
+                <button>Home</button>
             </a>
             <a href="auctions.html">
-                <button>Auctions</button> <!-- Link to the Auction Listing page -->
+                <button>Auctions</button>
             </a>
             <a href="add_item.html">
-                <button>Sell an Item</button> <!-- Link to the Add Item form -->
+                <button>Sell an Item</button>
             </a>
             <button>Categories</button>
         </div>
@@ -95,9 +120,15 @@
             <input type="text" placeholder="Search items...">
         </div>
         <div class="login-section">
-            <a href="Login.html" class="btn">Login</a> <!-- Link to login.html -->
-            <a href="register.html" class="btn">Sign Up</a> <!-- Link to register.html -->
+            <a href="Login.html" class="btn">Login</a>
+            <a href="register.html" class="btn">Sign Up</a>
         </div>
     </header>
+
+    <div class="home-content">
+        <h1>Welcome to Tricolour Auctions!</h1>
+        <p>Tricolour Auctions is the go-to platform for Queen's University students to buy and sell items that are useful for campus life. Whether you're looking for textbooks, electronics, or dorm essentials, Tricolour Auctions connects you with fellow students in a trusted and easy-to-use environment. Start exploring or selling today!</p>
+        <a href="auctions.html" class="btn">Browse Auctions</a>
+    </div>
 </body>
 </html>
