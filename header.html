@@ -18,7 +18,7 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
         .logo img {
-            height: 75px; 
+            height: 100px; /* Twice the original size (50px * 2) */
             margin-right: 20px; /* Added margin to separate from nav-buttons */
         }
         .nav-buttons {
@@ -66,12 +66,15 @@
         .login-section button:hover {
             background-color: #660000; /* Darker shade of red */
         }
+        .login-section a {
+            text-decoration: none; /* Remove underline from links */
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="logo">
-            <img src="Logo_Header.png" alt="Auction Logo"> 
+            <img src="Logo_Header.png" alt="Auction Logo"> <!-- Updated image name -->
         </div>
         <div class="nav-buttons">
             <button>Auctions</button>
@@ -82,8 +85,8 @@
             <input type="text" placeholder="Search items...">
         </div>
         <div class="login-section">
-            <button>Login</button>
-            <button>Sign Up</button>
+            <a href="login.html"><button>Login</button></a> <!-- Link to login.html -->
+            <a href="register.html"><button>Sign Up</button></a> <!-- Link to register.html -->
         </div>
     </header>
 </body>
