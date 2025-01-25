@@ -2,7 +2,7 @@
 
 **Real-Time Silent Auction Platform | Bid Smart, Win Big** 
 
-![Auction Banner](C:\Users\jeffp\Downloads\qhack2025\Tricolor-Auctions) <!-- Add your own banner image -->
+![Auction Banner](./image/Logo.png) <!-- Add your own banner image -->
 
 Welcome to Tricolor Auctions – your premier destination for competitive, real-time silent auctions! Experience the thrill of last-minute bids, countdown adrenaline, and strategic bidding wars while we ensure secure transactions and fair play.
 
