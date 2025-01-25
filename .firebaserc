@@ -1,0 +1,5 @@
+{
+  "projects": {
+    "default": "tricolour-auctions"  // Replace with your Firebase project ID
+  }
+}
