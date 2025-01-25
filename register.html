@@ -1,0 +1,160 @@
+<!-- Add this CSS in your <style> section or main.css -->
+    <style>
+        .password-criteria {
+          margin: 0.5rem 0;
+          padding: 0;
+          list-style: none;
+        }
+        
+        .criteria-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          margin: 0.2rem 0;
+          color: #666;
+        }
+        
+        .criteria-item .icon {
+          width: 16px;
+          height: 16px;
+        }
+        
+        .valid {
+          color: #138808; /* Green */
+        }
+        
+        .invalid {
+          color: #e74c3c; /* Red */
+        }
+        </style>
+        <section class="auth-form">
+            <h2>🇨🇦 Join Kingston's Premier Auctions</h2>
+            <div class="local-notice">
+              <p>Proudly serving the Kingston community since 2025</p>
+            </div>
+            <div class="legal">
+                <small>
+                  By registering, you agree to our 
+                  <a href="/terms">Terms</a> and 
+                  <a href="/privacy">Privacy Policy</a> compliant with 
+                  <abbr title="Personal Information Protection and Electronic Documents Act">PIPEDA</abbr>.
+                </small>
+              </div>
+            </section>
+        <!-- Update the registration form section -->
+        <section class="auth-form">
+          <h2>Create Your VIP Account</h2>
+          <form id="registrationForm" onsubmit="return validateRegistration(event)">
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" id="email" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="password">Password:</label>
+              <input type="password" id="password" minlength="8" required 
+                     oninput="checkPasswordCriteria(this.value)">
+              <ul class="password-criteria" id="passwordCriteria">
+                <li class="criteria-item" id="length">
+                  <span class="icon">❌</span>
+                  Minimum 8 characters
+                </li>
+                <li class="criteria-item" id="uppercase">
+                  <span class="icon">❌</span>
+                  1 uppercase letter
+                </li>
+                <li class="criteria-item" id="number">
+                  <span class="icon">❌</span>
+                  1 number
+                </li>
+                <li class="criteria-item" id="special">
+                  <span class="icon">❌</span>
+                  1 special character (@$!%*?&)
+                </li>
+              </ul>
+            </div>
+        
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password:</label>
+              <input type="password" id="confirmPassword" required 
+                     oninput="checkPasswordMatch(this.value)">
+              <small id="matchMessage" class="invalid"></small>
+            </div>
+        
+            <button type="submit" class="btn">Register Now</button>
+            <p>Already member? <a href="login.html">Login here</a></p>
+          </form>
+        </section>
+        
+        <script>
+        function checkPasswordCriteria(password) {
+          const criteria = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            number: /\d/.test(password),
+            special: /[@$!%*?&]/.test(password)
+          };
+        
+          // Update criteria indicators
+          Object.keys(criteria).forEach(key => {
+            const element = document.getElementById(key);
+            element.classList.toggle('valid', criteria[key]);
+            element.classList.toggle('invalid', !criteria[key]);
+            element.querySelector('.icon').textContent = criteria[key] ? '✔️' : '❌';
+          });
+        }
+        
+        function checkPasswordMatch(confirmPassword) {
+          const password = document.getElementById('password').value;
+          const matchMessage = document.getElementById('matchMessage');
+          
+          if (password === '') {
+            matchMessage.textContent = 'Enter password first';
+            return;
+          }
+        
+          if (confirmPassword === password) {
+            matchMessage.textContent = 'Passwords match!';
+            matchMessage.classList.remove('invalid');
+            matchMessage.classList.add('valid');
+          } else {
+            matchMessage.textContent = 'Passwords do not match';
+            matchMessage.classList.remove('valid');
+            matchMessage.classList.add('invalid');
+          }
+        }
+        
+        function validateRegistration(event) {
+          event.preventDefault();
+          const password = document.getElementById('password').value;
+          const confirmPassword = document.getElementById('confirmPassword').value;
+        
+          // Check all criteria
+          const criteria = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            number: /\d/.test(password),
+            special: /[@$!%*?&]/.test(password)
+          };
+        
+          const allValid = Object.values(criteria).every(c => c);
+          
+          if (!allValid) {
+            alert('Please meet all password requirements');
+            return false;
+          }
+        
+          if (password !== confirmPassword) {
+            alert('Passwords do not match!');
+            return false;
+          }
+        
+          // Simulate registration success
+          alert('Verification email sent! Check your inbox.');
+          window.location.href = 'login.html';
+          return false;
+          
+        }
+        
+        
+        </script>

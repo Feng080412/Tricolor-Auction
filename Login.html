@@ -1,0 +1,26 @@
+<section class="auth-form">
+    <h2>VIP Member Login</h2>
+    <form id="loginForm" onsubmit="return validateLogin()">
+      <div class="form-group">
+        <label for="loginEmail">Email:</label>
+        <input type="email" id="loginEmail" required>
+      </div>
+  
+      <div class="form-group">
+        <label for="loginPassword">Password:</label>
+        <input type="password" id="loginPassword" required>
+      </div>
+  
+      <button type="submit" class="btn">Secure Login</button>
+      <p>New user? <a href="register.html">Create account</a></p>
+    </form>
+  </section>
+  
+  <script>
+  function validateLogin() {
+    // Simulate login success
+    alert('Login successful! Redirecting...');
+    window.location.href = 'dashboard.html';
+    return false; // Prevent form submission
+  }
+  </script>
