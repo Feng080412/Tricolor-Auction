@@ -12,7 +12,10 @@
         </div>
 
         <button type="submit" class="btn">Secure Login</button>
-        <p>New user? <a href="register.html" onclick="event.stopPropagation()">Create account</a></p>
+        <p>New user? 
+            <!-- Fixed the path to register.html -->
+            <a href="./register.html">Create account</a>
+        </p>
     </form>
 </section>
 
@@ -20,7 +23,8 @@
     function validateLogin() {
         // Simulate login success
         alert('Login successful! Redirecting...');
-        window.location.href = 'dashboard.html';
-        return false; // Prevent form submission
+        // Redirect to dashboard.html
+        window.location.href = './dashboard.html'; // Ensure the file exists
+        return false; // Prevent default form submission
     }
 </script>
