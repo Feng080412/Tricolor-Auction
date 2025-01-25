@@ -13,7 +13,7 @@
 
         <button type="submit" class="btn">Secure Login</button>
         <p>New user? 
-            <!-- Fixed the path to register.html -->
+            <!-- Updated link to point to register.html -->
             <a href="./register.html">Create account</a>
         </p>
     </form>
@@ -22,9 +22,9 @@
 <script>
     function validateLogin() {
         // Simulate login success
-        alert('Login successful! Redirecting...');
-        // Redirect to dashboard.html
-        window.location.href = './dashboard.html'; // Ensure the file exists
+        alert('Login successful! Redirecting to the homepage...');
+        // Redirect to index.html
+        window.location.href = './index.html'; // Ensure index.html exists in the same folder
         return false; // Prevent default form submission
     }
 </script>
