@@ -1,47 +1,148 @@
-<section class="auth-form">
-    <h2>Create Your VIP Account</h2>
-    <form id="registrationForm" onsubmit="return validateRegistration(event)">
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" required>
-        </div>
-        
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" minlength="8" required 
-                   oninput="checkPasswordCriteria(this.value)">
-            <ul class="password-criteria" id="passwordCriteria">
-                <li class="criteria-item" id="length">
-                    <span class="icon">❌</span>
-                    Minimum 8 characters
-                </li>
-                <li class="criteria-item" id="uppercase">
-                    <span class="icon">❌</span>
-                    1 uppercase letter
-                </li>
-                <li class="criteria-item" id="number">
-                    <span class="icon">❌</span>
-                    1 number
-                </li>
-                <li class="criteria-item" id="special">
-                    <span class="icon">❌</span>
-                    1 special character (@$!%*?&)
-                </li>
-            </ul>
-        </div>
-    
-        <div class="form-group">
-            <label for="confirmPassword">Confirm Password:</label>
-            <input type="password" id="confirmPassword" required 
-                   oninput="checkPasswordMatch(this.value)">
-            <small id="matchMessage" class="invalid"></small>
-        </div>
-    
-        <button type="submit" class="btn">Register Now</button>
-        <p>
-            Already a member? 
-            <!-- Link to Login.html -->
-            <a href="./Login.html">Login here</a>
-        </p>
-    </form>
-</section>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Auction Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .auth-form {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .auth-form h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #003366;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #001f4d;
+        }
+        .auth-form p {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .auth-form a {
+            color: #003366;
+            text-decoration: none;
+        }
+        .auth-form a:hover {
+            text-decoration: underline;
+        }
+        .password-criteria {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .criteria-item {
+            margin-bottom: 5px;
+        }
+        .invalid {
+            color: red;
+        }
+        .valid {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <section class="auth-form">
+        <h2>Create Your VIP Account</h2>
+        <form id="registrationForm" onsubmit="return validateRegistration(event)">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" minlength="8" required 
+                       oninput="checkPasswordCriteria(this.value)">
+                <ul class="password-criteria" id="passwordCriteria">
+                    <li class="criteria-item" id="length">
+                        <span class="icon">❌</span>
+                        Minimum 8 characters
+                    </li>
+                    <li class="criteria-item" id="uppercase">
+                        <span class="icon">❌</span>
+                        1 uppercase letter
+                    </li>
+                    <li class="criteria-item" id="number">
+                        <span class="icon">❌</span>
+                        1 number
+                    </li>
+                    <li class="criteria-item" id="special">
+                        <span class="icon">❌</span>
+                        1 special character (@$!%*?&)
+                    </li>
+                </ul>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password:</label>
+                <input type="password" id="confirmPassword" required 
+                       oninput="checkPasswordMatch(this.value)">
+                <small id="matchMessage" class="invalid"></small>
+            </div>
+            <button type="submit" class="btn">Register Now</button>
+            <p>
+                Already a member? 
+                <a href="./Login.html">Login here</a>
+            </p>
+        </form>
+    </section>
+    <script>
+        function validateRegistration(event) {
+            event.preventDefault();
+
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            if (password !== confirmPassword) {
+                document.getElementById("matchMessage").innerText = "Passwords do not match!";
+                return false;
+            }
+
+            document.getElementById("matchMessage").innerText = ""; // Clear message if valid
+            alert("Registration successful!");
+            window.location.href = "./Login.html"; // Redirect to login page
+            return true;
+        }
+
+        function checkPasswordCriteria(password) {
+            const criteria = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+               
