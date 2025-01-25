@@ -1,6 +1,6 @@
 # 🏷️ Tricolor Auctions
 
-**Real-Time Silent Auction Platform | Bid Smart, Win Big** CA
+**Real-Time Silent Auction Platform | Bid Smart, Win Big** 
 
 ![Auction Banner](C:\Users\jeffp\Downloads\qhack2025\Tricolor-Auctions) <!-- Add your own banner image -->
 
