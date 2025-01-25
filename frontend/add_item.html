@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Auction Item</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        header {
+            background-color: #003366; /* Dark blue */
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px; /* Increased max-width */
+            margin: 20px auto;
+            background: white;
+            padding: 30px; /* Increased padding */
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .form-group input, 
+        .form-group textarea, 
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-group textarea {
+            resize: vertical;
+        }
+        .form-group button {
+            background-color: #003366;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #001f4d;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Add Auction Item</h1>
+    </header>
+    <div class="container">
+        <form action="submit_item.php" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="images">Upload Images/Videos</label>
+                <input type="file" id="images" name="images[]" multiple accept="image/*,video/*" required>
+            </div>
+            <div class="form-group">
+                <label for="starting_bid">Starting Bid</label>
+                <input type="number" id="starting_bid" name="starting_bid" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="end_time">Auction End Time</label>
+                <input type="datetime-local" id="end_time" name="end_time" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Submit Item</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

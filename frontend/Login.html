@@ -12,9 +12,9 @@
             background-color: #f9f9f9;
         }
         .auth-form {
-            max-width: 400px;
+            max-width: 500px; /* Increased max-width for a larger box */
             margin: 50px auto;
-            padding: 20px;
+            padding: 30px; /* Increased padding for more internal spacing */
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -86,18 +86,3 @@
     <script>
         function validateLogin(event) {
             event.preventDefault();
-
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-
-            // Mock validation
-            if (email === "user@example.com" && password === "Password123!") {
-                alert("Login successful!");
-                window.location.href = "index.html"; // Redirect to homepage
-            } else {
-                alert("Invalid email or password.");
-            }
-        }
-    </script>
-</body>
-</html>

@@ -12,9 +12,9 @@
             background-color: #f9f9f9;
         }
         .auth-form {
-            max-width: 400px;
+            max-width: 500px; /* Increased max-width */
             margin: 50px auto;
-            padding: 20px;
+            padding: 30px; /* Increased padding */
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -145,4 +145,38 @@
             const criteria = {
                 length: password.length >= 8,
                 uppercase: /[A-Z]/.test(password),
-               
+                number: /[0-9]/.test(password),
+                special: /[@$!%*?&]/.test(password),
+            };
+
+            for (let key in criteria) {
+                const element = document.getElementById(key);
+                if (criteria[key]) {
+                    element.querySelector(".icon").textContent = "✔️";
+                    element.classList.remove("invalid");
+                    element.classList.add("valid");
+                } else {
+                    element.querySelector(".icon").textContent = "❌";
+                    element.classList.remove("valid");
+                    element.classList.add("invalid");
+                }
+            }
+        }
+
+        function checkPasswordMatch(confirmPassword) {
+            const password = document.getElementById("password").value;
+            const matchMessage = document.getElementById("matchMessage");
+
+            if (confirmPassword !== password) {
+                matchMessage.textContent = "Passwords do not match!";
+                matchMessage.classList.add("invalid");
+                matchMessage.classList.remove("valid");
+            } else {
+                matchMessage.textContent = "Passwords match!";
+                matchMessage.classList.add("valid");
+                matchMessage.classList.remove("invalid");
+            }
+        }
+    </script>
+</body>
+</html>
