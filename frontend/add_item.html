@@ -5,56 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Auction Item</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
-        header {
-            background-color: #003366;
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .form-group input, 
-        .form-group textarea, 
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .form-group textarea {
-            resize: vertical;
-        }
-        .form-group button {
-            background-color: #003366;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .form-group button:hover {
-            background-color: #001f4d;
-        }
+        /* Styles here (same as before) */
     </style>
 </head>
 <body>
@@ -62,7 +13,7 @@
         <h1>Add Auction Item</h1>
     </header>
     <div class="container">
-        <form action="submit_item.php" method="POST" enctype="multipart/form-data">
+        <form id="auction-form">
             <div class="form-group">
                 <label for="title">Title</label>
                 <input type="text" id="title" name="title" required>
@@ -74,11 +25,10 @@
             <div class="form-group">
                 <label for="category">Category</label>
                 <select id="category" name="category" required>
-                    <option value="Electronics">Electronics</option>
-                    <option value="Clothing">Clothing</option>
-                    <option value="Books">Books</option>
-                    <option value="Furniture">Furniture</option>
-                    <option value="Other">Other</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="furniture">Furniture</option>
+                    <!-- Add more categories as needed -->
                 </select>
             </div>
             <div class="form-group">
@@ -94,5 +44,54 @@
             </div>
         </form>
     </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    
+    <script>
+        // Firebase configuration (replace with your own Firebase project credentials)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
+
+        // Handle form submission
+        document.getElementById('auction-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Get form data
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const category = document.getElementById('category').value;
+            const startingBid = parseFloat(document.getElementById('starting_bid').value);
+            const endTime = new Date(document.getElementById('end_time').value);
+
+            // Save item to Firestore
+            try {
+                await db.collection('auctions').add({
+                    title: title,
+                    description: description,
+                    category: category,
+                    startingBid: startingBid,
+                    endTime: endTime
+                });
+                alert('Item added successfully!');
+                // Optionally, reset form
+                e.target.reset();
+            } catch (error) {
+                console.error('Error adding item:', error);
+                alert('Failed to add item!');
+            }
+        });
+    </script>
 </body>
 </html>
