@@ -58,6 +58,11 @@
             color: #990000;
             font-weight: bold;
         }
+        .auction-closed {
+            color: green;
+            font-weight: bold;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -83,6 +88,12 @@
         </div>
         <div id="bid-updated-msg" style="margin-top: 20px; color: green; display: none;">
             Your bid has been placed successfully!
+        </div>
+        <div id="auction-closed-msg" class="auction-closed" style="display: none;">
+            Auction Closed! Congratulations to the winner!
+        </div>
+        <div id="winner-notification" class="auction-closed" style="display: none;">
+            You Won! Congratulations on your successful bid!
         </div>
     </div>
 
@@ -111,41 +122,35 @@
         const bidAmountInput = document.getElementById("bid-amount");
         const bidUpdatedMsg = document.getElementById("bid-updated-msg");
         const timeLeftElement = document.getElementById("time-left");
+        const auctionClosedMsg = document.getElementById("auction-closed-msg");
+        const winnerNotification = document.getElementById("winner-notification");
+
+        let auctionData;
 
         const fetchAuctionItem = async () => {
             try {
                 const docSnap = await getDoc(auctionRef);
                 if (docSnap.exists()) {
-                    const auctionData = docSnap.data();
-
-                    // Log the auction data to see its structure
-                    console.log("Auction Data:", auctionData);
+                    auctionData = docSnap.data();
 
                     document.getElementById("item-title").textContent = auctionData.title;
                     document.getElementById("item-description").textContent = auctionData.description;
                     document.getElementById("item-category").textContent = `Category: ${auctionData.category}`;
 
-                    // Get starting bid and current bid
-                    const startingBid = auctionData.startingBid;  // Assuming startingBid is in the data
+                    const startingBid = auctionData.startingBid;
                     let currentBid = auctionData.currentBid;
 
-                    console.log("Starting Bid:", startingBid);
-                    console.log("Current Bid:", currentBid);
-
-                    // If currentBid is not set or less than the startingBid, set it to the startingBid
                     if (startingBid && (isNaN(currentBid) || currentBid < startingBid)) {
                         currentBid = startingBid;
                     }
 
-                    // Display the current bid
                     if (currentBid && !isNaN(currentBid)) {
                         currentBidElement.textContent = `Current Bid: $${currentBid}`;
                     } else {
                         currentBidElement.textContent = `Current Bid: Not set yet`;
                     }
 
-                    // Display time left
-                    const endTime = auctionData.endTime.toDate(); // Convert Firestore timestamp to JS Date
+                    const endTime = auctionData.endTime.toDate();
                     updateTimeLeft(endTime);
                 } else {
                     console.log("No such document!");
@@ -157,20 +162,45 @@
 
         const updateTimeLeft = (endTime) => {
             const now = new Date();
-            const timeDiff = endTime - now; // Difference in milliseconds
+            const timeDiff = endTime - now;
+
             if (timeDiff <= 0) {
-                timeLeftElement.textContent = "Auction has ended!";
+                endAuction();
                 return;
             }
 
             const hours = Math.floor(timeDiff / (1000 * 60 * 60));
             const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-            
+
             timeLeftElement.textContent = `Time Left: ${hours}:${minutes}:${seconds}`;
             
             // Update every second
             setTimeout(() => updateTimeLeft(endTime), 1000);
+        };
+
+        const endAuction = async () => {
+            auctionClosedMsg.style.display = "block";
+
+            // Lock the auction and winner notification
+            try {
+                await updateDoc(auctionRef, { 
+                    auctionStatus: "closed" 
+                });
+
+                // Check for winner based on highest bid
+                const winner = auctionData.highestBidder; // Assuming highestBidder holds the winner's ID or name
+                if (winner) {
+                    winnerNotification.textContent = `You Won! Congratulations to ${winner}!`;
+                    winnerNotification.style.display = "block";
+                }
+
+                // Prevent further bidding
+                document.getElementById("place-bid-btn").disabled = true;
+                bidAmountInput.disabled = true;
+            } catch (error) {
+                console.error("Error ending auction: ", error);
+            }
         };
 
         const placeBid = async () => {
@@ -194,7 +224,8 @@
                     // Update current bid in Firestore
                     await updateDoc(auctionRef, {
                         currentBid: bidAmount,
-                        lastBidTimestamp: new Date()
+                        lastBidTimestamp: new Date(),
+                        highestBidder: "userId" // Update with the actual user ID of the highest bidder
                     });
 
                     currentBidElement.textContent = `Current Bid: $${bidAmount}`;
@@ -206,18 +237,14 @@
             }
         };
 
-        // Fetch auction item data on page load
         fetchAuctionItem();
 
-        // Handle placing a bid
         document.getElementById("place-bid-btn").addEventListener("click", placeBid);
 
-        // Listen for real-time updates to the auction data
         onSnapshot(auctionRef, (doc) => {
             const auctionData = doc.data();
-            if (auctionData) {
-                currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
-                // Update other elements if needed
+            if (auctionData && auctionData.auctionStatus === "closed") {
+                endAuction();
             }
         });
     </script>
