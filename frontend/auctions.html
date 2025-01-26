@@ -58,10 +58,6 @@
             color: #990000;
             font-weight: bold;
         }
-        .countdown {
-            color: red;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
@@ -75,8 +71,8 @@
                 <h2 id="item-title">Item Title</h2>
                 <p id="item-description">Description of item. Highlight its features and why it's valuable!</p>
                 <p id="item-category">Category: Example Category</p>
-                <p class="current-bid" id="current-bid">Current Bid: $50.00</p>
-                <p id="time-left" class="countdown">Time Left: 01:23:45</p>
+                <p class="current-bid" id="current-bid">Current Bid: $50</p>
+                <p id="time-left">Time Left: 01:23:45</p>
             </div>
         </div>
         <div class="bid-section">
@@ -92,8 +88,8 @@
 
     <!-- Firebase Integration -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDLOo7mTzXeGXbceckEBSU92SV7KWOK6pw",
@@ -116,35 +112,6 @@
         const bidUpdatedMsg = document.getElementById("bid-updated-msg");
         const timeLeftElement = document.getElementById("time-left");
 
-        // Function to calculate the time left
-        const calculateTimeLeft = (endTime) => {
-            const now = new Date();
-            const diff = endTime - now;
-
-            if (diff <= 0) return "Auction Ended";
-
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            return `${hours}h ${minutes}m ${seconds}s`;
-        };
-
-        // Start countdown
-        const startCountdown = (endTime) => {
-            const updateCountdown = () => {
-                const timeLeft = calculateTimeLeft(endTime);
-                timeLeftElement.textContent = timeLeft;
-
-                if (timeLeft !== "Auction Ended") {
-                    setTimeout(updateCountdown, 1000);
-                }
-            };
-
-            updateCountdown();
-        };
-
-        // Fetch auction item data
         const fetchAuctionItem = async () => {
             try {
                 const docSnap = await getDoc(auctionRef);
@@ -153,11 +120,11 @@
                     document.getElementById("item-title").textContent = auctionData.title;
                     document.getElementById("item-description").textContent = auctionData.description;
                     document.getElementById("item-category").textContent = `Category: ${auctionData.category}`;
-                    currentBidElement.textContent = `Current Bid: $${auctionData.startingBid.toFixed(2)}`;
+                    currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
 
-                    // Start the countdown
-                    const endTime = auctionData.endTime.toDate(); // Convert Firestore Timestamp to JS Date
-                    startCountdown(endTime);
+                    // Display time left
+                    const endTime = auctionData.endTime.toDate(); // Convert Firestore timestamp to JS Date
+                    updateTimeLeft(endTime);
                 } else {
                     console.log("No such document!");
                 }
@@ -166,7 +133,24 @@
             }
         };
 
-        // Place a bid
+        const updateTimeLeft = (endTime) => {
+            const now = new Date();
+            const timeDiff = endTime - now; // Difference in milliseconds
+            if (timeDiff <= 0) {
+                timeLeftElement.textContent = "Auction has ended!";
+                return;
+            }
+
+            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+            
+            timeLeftElement.textContent = `Time Left: ${hours}:${minutes}:${seconds}`;
+            
+            // Update every second
+            setTimeout(() => updateTimeLeft(endTime), 1000);
+        };
+
         const placeBid = async () => {
             const bidAmount = parseInt(bidAmountInput.value);
             if (isNaN(bidAmount)) {
@@ -178,7 +162,7 @@
                 const auctionSnap = await getDoc(auctionRef);
                 if (auctionSnap.exists()) {
                     const auctionData = auctionSnap.data();
-                    const currentBid = auctionData.startingBid;
+                    const currentBid = auctionData.currentBid;
 
                     if (bidAmount < currentBid + 5) {
                         alert("Your bid must be at least $5 higher than the current bid!");
@@ -187,11 +171,11 @@
 
                     // Update current bid in Firestore
                     await updateDoc(auctionRef, {
-                        startingBid: bidAmount,
+                        currentBid: bidAmount,
                         lastBidTimestamp: new Date()
                     });
 
-                    currentBidElement.textContent = `Current Bid: $${bidAmount.toFixed(2)}`;
+                    currentBidElement.textContent = `Current Bid: $${bidAmount}`;
                     bidUpdatedMsg.style.display = "block";
                     bidAmountInput.value = bidAmount + 5;
                 }
@@ -210,7 +194,8 @@
         onSnapshot(auctionRef, (doc) => {
             const auctionData = doc.data();
             if (auctionData) {
-                currentBidElement.textContent = `Current Bid: $${auctionData.startingBid.toFixed(2)}`;
+                currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
+                // Update other elements if needed
             }
         });
     </script>
