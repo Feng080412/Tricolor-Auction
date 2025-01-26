@@ -5,56 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Auction Item</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
-        header {
-            background-color: #003366; /* Dark blue */
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        .container {
-            max-width: 800px; /* Increased max-width */
-            margin: 20px auto;
-            background: white;
-            padding: 30px; /* Increased padding */
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .form-group input, 
-        .form-group textarea, 
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .form-group textarea {
-            resize: vertical;
-        }
-        .form-group button {
-            background-color: #003366;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .form-group button:hover {
-            background-color: #001f4d;
-        }
+        /* Your existing CSS styles */
     </style>
 </head>
 <body>
@@ -62,7 +13,7 @@
         <h1>Add Auction Item</h1>
     </header>
     <div class="container">
-        <form action="submit_item.php" method="POST" enctype="multipart/form-data">
+        <form id="addItemForm">
             <div class="form-group">
                 <label for="title">Title</label>
                 <input type="text" id="title" name="title" required>
@@ -88,5 +39,53 @@
             </div>
         </form>
     </div>
+
+    <!-- Firebase Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLOo7mTzXeGXbceckEBSU92SV7KWOK6pw",
+            authDomain: "tricolour-auctions.firebaseapp.com",
+            projectId: "tricolour-auctions",
+            storageBucket: "tricolour-auctions.firebasestorage.app",
+            messagingSenderId: "770024392931",
+            appId: "1:770024392931:web:52fd65be345288f9159dd6",
+            measurementId: "G-78ZV7D00GY"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const addItemForm = document.getElementById("addItemForm");
+
+        addItemForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const title = document.getElementById("title").value;
+            const description = document.getElementById("description").value;
+            const startingBid = parseFloat(document.getElementById("starting_bid").value);
+            const endTime = document.getElementById("end_time").value;
+
+            try {
+                // Add the item to Firestore
+                const docRef = await addDoc(collection(db, "auctions"), {
+                    title,
+                    description,
+                    startingBid,
+                    endTime: new Date(endTime).toISOString(),
+                    currentBid: startingBid, // Initialize current bid to starting bid
+                    createdAt: new Date().toISOString(),
+                });
+
+                alert("Item added successfully!");
+                window.location.href = "auctions.html"; // Redirect to auctions page
+            } catch (error) {
+                console.error("Error adding item: ", error);
+                alert("Error adding item. Please try again.");
+            }
+        });
+    </script>
 </body>
 </html>
