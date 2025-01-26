@@ -1,0 +1,10 @@
+{
+  "hosting": {
+    "public": "frontend",  // Points to the folder containing your HTML files
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
