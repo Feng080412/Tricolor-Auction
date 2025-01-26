@@ -1,10 +1,16 @@
 {
   "hosting": {
-    "public": "frontend",  // Points to the folder containing your HTML files
+    "public": "frontend",  // Replace with your public directory
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
     ]
   }
 }
