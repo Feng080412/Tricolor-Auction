@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Item 1 - Place Your Bid</title>
     <style>
-        /* Styles remain unchanged */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -62,22 +61,22 @@
 </head>
 <body>
     <header>
-        <h1>Bid on Item</h1>
+        <h1>Bid on Item 1</h1>
     </header>
     <div class="container">
         <div class="item-details">
-            <img src="item.jpg" alt="Item Image">
+            <img src="item1.jpg" alt="Item 1">
             <div>
-                <h2 id="item-title">Item Title</h2>
-                <p id="item-description">Description of the item.</p>
+                <h2 id="item-title">Item 1 Title</h2>
+                <p id="item-description">Description of item 1. Highlight its features and why it's valuable!</p>
                 <p class="current-bid" id="current-bid">Current Bid: $50</p>
-                <p id="time-left">Time Left: Loading...</p>
+                <p>Time Left: <span id="time-left">01:23:45</span></p>
             </div>
         </div>
         <div class="bid-section">
             <h3>Place Your Bid</h3>
             <p>Minimum increment: $5</p>
-            <input type="number" id="bid-amount" step="5" placeholder="Enter your bid">
+            <input type="number" id="bid-amount" min="55" step="5" placeholder="Enter your bid">
             <button id="place-bid-btn">Place Bid</button>
         </div>
         <div id="bid-updated-msg" style="margin-top: 20px; color: green; display: none;">
@@ -85,12 +84,10 @@
         </div>
     </div>
 
-    <!-- Firebase Configuration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
-        // Your Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDLOo7mTzXeGXbceckEBSU92SV7KWOK6pw",
             authDomain: "tricolour-auctions.firebaseapp.com",
@@ -101,86 +98,57 @@
             measurementId: "G-78ZV7D00GY"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Fetch item data and display it
-        const fetchItemData = async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const itemId = urlParams.get("id");
-            if (!itemId) {
-                alert("Item not found!");
-                return;
-            }
+        const itemId = "your-auction-item-id"; // Replace with dynamic auction item ID
 
+        const currentBidElement = document.getElementById("current-bid");
+        const bidAmountInput = document.getElementById("bid-amount");
+        const bidUpdatedMsg = document.getElementById("bid-updated-msg");
+
+        // Fetch auction data
+        const fetchAuctionData = async () => {
             const itemRef = doc(db, "auctions", itemId);
-            const itemSnapshot = await getDoc(itemRef);
-
-            if (itemSnapshot.exists()) {
-                const data = itemSnapshot.data();
+            const docSnap = await getDoc(itemRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
                 document.getElementById("item-title").textContent = data.title;
                 document.getElementById("item-description").textContent = data.description;
-                document.getElementById("current-bid").textContent = `Current Bid: $${data.startingBid.toFixed(2)}`;
-
-                const endTime = data.endTime.toDate();
-                updateCountdown(endTime);
+                currentBidElement.textContent = `Current Bid: $${data.currentBid}`;
             } else {
-                alert("Item not found in database!");
+                console.error("No such document!");
             }
         };
 
-        // Handle countdown
-        const updateCountdown = (endTime) => {
-            const interval = setInterval(() => {
-                const now = new Date();
-                const diff = endTime - now;
-
-                if (diff <= 0) {
-                    clearInterval(interval);
-                    document.getElementById("time-left").textContent = "Auction Ended";
-                    return;
-                }
-
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                document.getElementById("time-left").textContent = `Time Left: ${hours}h ${minutes}m ${seconds}s`;
-            }, 1000);
-        };
-
-        // Handle bid submission
-        document.getElementById("place-bid-btn").addEventListener("click", async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const itemId = urlParams.get("id");
-            const bidAmount = parseFloat(document.getElementById("bid-amount").value);
-
-            if (!itemId || isNaN(bidAmount)) {
-                alert("Invalid bid or item!");
-                return;
-            }
-
+        // Place a bid
+        const placeBid = async (newBid) => {
             const itemRef = doc(db, "auctions", itemId);
-            const itemSnapshot = await getDoc(itemRef);
-
-            if (itemSnapshot.exists()) {
-                const data = itemSnapshot.data();
-                if (bidAmount >= data.startingBid + 5) {
-                    await updateDoc(itemRef, {
-                        startingBid: bidAmount,
-                        lastBidTime: Timestamp.now(),
-                    });
-                    document.getElementById("current-bid").textContent = `Current Bid: $${bidAmount.toFixed(2)}`;
-                    document.getElementById("bid-updated-msg").style.display = "block";
+            const docSnap = await getDoc(itemRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (newBid >= data.currentBid + data.minIncrement) {
+                    await updateDoc(itemRef, { currentBid: newBid });
+                    alert("Bid placed successfully!");
+                    fetchAuctionData(); // Refresh current bid
+                    bidUpdatedMsg.style.display = "block";
                 } else {
-                    alert("Bid must be at least $5 higher than the current bid!");
+                    alert("Bid must be higher than the current bid and meet the increment!");
                 }
-            } else {
-                alert("Item not found in database!");
+            }
+        };
+
+        // Event listener for the bid button
+        document.getElementById("place-bid-btn").addEventListener("click", () => {
+            const newBid = parseInt(bidAmountInput.value, 10);
+            if (!isNaN(newBid)) {
+                placeBid(newBid);
             }
         });
 
-        // Initialize page
-        fetchItemData();
+        // Initial data fetch
+        fetchAuctionData();
     </script>
 </body>
 </html>
