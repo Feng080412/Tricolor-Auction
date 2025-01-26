@@ -89,6 +89,34 @@
 
         const auctionGrid = document.getElementById("auctionGrid");
 
+        // Calculate time left for the auction
+        const calculateTimeLeft = (endTime) => {
+            const now = new Date(); // Get the current date and time
+            const diff = endTime - now; // Calculate the difference in milliseconds
+
+            if (diff <= 0) return "Auction Ended"; // If the auction has ended, return "Auction Ended"
+
+            const hours = Math.floor(diff / (1000 * 60 * 60)); // Calculate hours left
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)); // Calculate minutes left
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000); // Calculate seconds left
+
+            return `${hours}h ${minutes}m ${seconds}s`; // Return the formatted time left
+        };
+
+        // Function to continuously update the countdowns
+        const startCountdown = (endTime, countdownElement) => {
+            const updateCountdown = () => {
+                const timeLeft = calculateTimeLeft(endTime); // Calculate time left
+                countdownElement.textContent = timeLeft; // Update the countdown text
+
+                if (timeLeft !== "Auction Ended") {
+                    setTimeout(updateCountdown, 1000); // Update the countdown every second
+                }
+            };
+
+            updateCountdown(); // Start the countdown updates
+        };
+
         // Fetch and display auction items
         const fetchAuctions = async () => {
             try {
@@ -97,8 +125,7 @@
 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    const endTime = new Date(data.endTime);
-                    const timeLeft = calculateTimeLeft(endTime);
+                    const endTime = new Date(data.endTime.seconds * 1000); // Firestore Timestamp to JS Date
 
                     const auctionItem = document.createElement("div");
                     auctionItem.classList.add("auction-item");
@@ -109,33 +136,23 @@
                         <div class="details">
                             <h3>${data.title}</h3>
                             <p>${data.description}</p>
-                            <p><strong>Category:</strong> ${data.category}</p> <!-- Display the category -->
+                            <p><strong>Category:</strong> ${data.category}</p>
                             <p class="current-bid">Current Bid: $${data.startingBid.toFixed(2)}</p>
-                            <p class="countdown">Time Left: ${timeLeft}</p>
+                            <p class="countdown"></p>
                             <a href="auction_item.html?id=${doc.id}">
                                 <button>Bid Now</button>
                             </a>
                         </div>
                     `;
                     auctionGrid.appendChild(auctionItem);
+
+                    // Start the countdown for this item
+                    const countdownElement = auctionItem.querySelector(".countdown");
+                    startCountdown(endTime, countdownElement);
                 });
             } catch (error) {
                 console.error("Error fetching auctions: ", error);
             }
-        };
-
-        // Calculate time left for the auction
-        const calculateTimeLeft = (endTime) => {
-            const now = new Date();
-            const diff = endTime - now;
-
-            if (diff <= 0) return "Auction Ended";
-
-            const hours = Math.floor(diff / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            return `${hours}h ${minutes}m ${seconds}s`;
         };
 
         // Fetch auctions on page load
