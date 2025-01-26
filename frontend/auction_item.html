@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Item 1 - Place Your Bid</title>
+    <title>Bid on Item</title>
     <style>
+        /* Your styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -61,16 +62,17 @@
 </head>
 <body>
     <header>
-        <h1>Bid on Item 1</h1>
+        <h1>Bid on Auction Item</h1>
     </header>
     <div class="container">
         <div class="item-details">
-            <img src="item1.jpg" alt="Item 1">
+            <img id="item-image" src="item1.jpg" alt="Item">
             <div>
-                <h2 id="item-title">Item 1 Title</h2>
-                <p id="item-description">Description of item 1. Highlight its features and why it's valuable!</p>
+                <h2 id="item-title">Item Title</h2>
+                <p id="item-description">Description of item. Highlight its features and why it's valuable!</p>
+                <p id="item-category">Category: Example Category</p>
                 <p class="current-bid" id="current-bid">Current Bid: $50</p>
-                <p>Time Left: <span id="time-left">01:23:45</span></p>
+                <p id="time-left">Time Left: 01:23:45</p>
             </div>
         </div>
         <div class="bid-section">
@@ -84,9 +86,10 @@
         </div>
     </div>
 
+    <!-- Firebase Integration -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDLOo7mTzXeGXbceckEBSU92SV7KWOK6pw",
@@ -98,57 +101,60 @@
             measurementId: "G-78ZV7D00GY"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const itemId = "your-auction-item-id"; // Replace with dynamic auction item ID
+        const auctionId = new URLSearchParams(window.location.search).get('id'); // Extract auction ID from URL
+        const auctionRef = doc(db, "auctions", auctionId);
 
-        const currentBidElement = document.getElementById("current-bid");
+        const currentBidElement = document.querySelector("#current-bid");
         const bidAmountInput = document.getElementById("bid-amount");
         const bidUpdatedMsg = document.getElementById("bid-updated-msg");
 
-        // Fetch auction data
-        const fetchAuctionData = async () => {
-            const itemRef = doc(db, "auctions", itemId);
-            const docSnap = await getDoc(itemRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                document.getElementById("item-title").textContent = data.title;
-                document.getElementById("item-description").textContent = data.description;
-                currentBidElement.textContent = `Current Bid: $${data.currentBid}`;
-            } else {
-                console.error("No such document!");
-            }
-        };
-
-        // Place a bid
-        const placeBid = async (newBid) => {
-            const itemRef = doc(db, "auctions", itemId);
-            const docSnap = await getDoc(itemRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                if (newBid >= data.currentBid + data.minIncrement) {
-                    await updateDoc(itemRef, { currentBid: newBid });
-                    alert("Bid placed successfully!");
-                    fetchAuctionData(); // Refresh current bid
-                    bidUpdatedMsg.style.display = "block";
+        const fetchAuctionItem = async () => {
+            try {
+                const docSnap = await getDoc(auctionRef);
+                if (docSnap.exists()) {
+                    const auctionData = docSnap.data();
+                    document.getElementById("item-title").textContent = auctionData.title;
+                    document.getElementById("item-description").textContent = auctionData.description;
+                    document.getElementById("item-category").textContent = `Category: ${auctionData.category}`;
+                    currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
+                    // You can add more details like time left here if needed
                 } else {
-                    alert("Bid must be higher than the current bid and meet the increment!");
+                    console.log("No such document!");
                 }
+            } catch (error) {
+                console.error("Error getting auction item: ", error);
             }
         };
 
-        // Event listener for the bid button
-        document.getElementById("place-bid-btn").addEventListener("click", () => {
-            const newBid = parseInt(bidAmountInput.value, 10);
-            if (!isNaN(newBid)) {
-                placeBid(newBid);
+        const placeBid = async () => {
+            const bidAmount = parseInt(bidAmountInput.value);
+            if (isNaN(bidAmount) || bidAmount < parseInt(currentBidElement.textContent.split("$")[1]) + 5) {
+                alert("Please enter a valid bid amount!");
+                return;
             }
-        });
 
-        // Initial data fetch
-        fetchAuctionData();
+            try {
+                // Update current bid in Firestore
+                await updateDoc(auctionRef, {
+                    currentBid: bidAmount,
+                    lastBidTimestamp: new Date()
+                });
+                currentBidElement.textContent = `Current Bid: $${bidAmount}`;
+                bidUpdatedMsg.style.display = "block";
+                bidAmountInput.value = bidAmount + 5;
+            } catch (error) {
+                console.error("Error placing bid: ", error);
+            }
+        };
+
+        // Fetch auction item data on page load
+        fetchAuctionItem();
+
+        // Handle placing a bid
+        document.getElementById("place-bid-btn").addEventListener("click", placeBid);
     </script>
 </body>
 </html>
