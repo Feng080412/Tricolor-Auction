@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auction Listings</title>
     <style>
-        /* Your existing CSS styles */
         .auction-item {
             border: 1px solid #ddd;
             padding: 16px;
@@ -91,30 +90,30 @@
 
         // Calculate time left for the auction
         const calculateTimeLeft = (endTime) => {
-            const now = new Date(); // Get the current date and time
-            const diff = endTime - now; // Calculate the difference in milliseconds
+            const now = new Date();
+            const diff = endTime - now;
 
-            if (diff <= 0) return "Auction Ended"; // If the auction has ended, return "Auction Ended"
+            if (diff <= 0) return "Auction Ended";
 
-            const hours = Math.floor(diff / (1000 * 60 * 60)); // Calculate hours left
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)); // Calculate minutes left
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000); // Calculate seconds left
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            return `${hours}h ${minutes}m ${seconds}s`; // Return the formatted time left
+            return `${hours}h ${minutes}m ${seconds}s`;
         };
 
-        // Function to continuously update the countdowns
+        // Start countdown for each auction
         const startCountdown = (endTime, countdownElement) => {
             const updateCountdown = () => {
-                const timeLeft = calculateTimeLeft(endTime); // Calculate time left
-                countdownElement.textContent = timeLeft; // Update the countdown text
+                const timeLeft = calculateTimeLeft(endTime);
+                countdownElement.textContent = timeLeft;
 
                 if (timeLeft !== "Auction Ended") {
-                    setTimeout(updateCountdown, 1000); // Update the countdown every second
+                    setTimeout(updateCountdown, 1000);
                 }
             };
 
-            updateCountdown(); // Start the countdown updates
+            updateCountdown();
         };
 
         // Fetch and display auction items
@@ -125,7 +124,7 @@
 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    const endTime = new Date(data.endTime.seconds * 1000); // Firestore Timestamp to JS Date
+                    const endTime = data.endTime.toDate(); // Convert Firestore Timestamp to JavaScript Date
 
                     const auctionItem = document.createElement("div");
                     auctionItem.classList.add("auction-item");
@@ -146,7 +145,7 @@
                     `;
                     auctionGrid.appendChild(auctionItem);
 
-                    // Start the countdown for this item
+                    // Start the countdown for this auction
                     const countdownElement = auctionItem.querySelector(".countdown");
                     startCountdown(endTime, countdownElement);
                 });
