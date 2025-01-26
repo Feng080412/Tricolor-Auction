@@ -6,6 +6,42 @@
     <title>Auction Listings</title>
     <style>
         /* Your existing CSS styles */
+        .auction-item {
+            border: 1px solid #ddd;
+            padding: 16px;
+            margin: 10px;
+            background-color: white;
+            border-radius: 8px;
+        }
+
+        .details {
+            font-family: Arial, sans-serif;
+        }
+
+        .details h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .details p {
+            margin: 5px 0;
+        }
+
+        .details .current-bid {
+            color: green;
+            font-weight: bold;
+        }
+
+        .details .countdown {
+            color: red;
+            font-weight: bold;
+        }
+
+        .auction-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
     </style>
 </head>
 <body>
@@ -73,7 +109,8 @@
                         <div class="details">
                             <h3>${data.title}</h3>
                             <p>${data.description}</p>
-                            <p class="current-bid">Current Bid: $${data.currentBid.toFixed(2)}</p>
+                            <p><strong>Category:</strong> ${data.category}</p> <!-- Display the category -->
+                            <p class="current-bid">Current Bid: $${data.startingBid.toFixed(2)}</p>
                             <p class="countdown">Time Left: ${timeLeft}</p>
                             <a href="auction_item.html?id=${doc.id}">
                                 <button>Bid Now</button>
