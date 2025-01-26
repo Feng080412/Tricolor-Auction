@@ -117,10 +117,32 @@
                 const docSnap = await getDoc(auctionRef);
                 if (docSnap.exists()) {
                     const auctionData = docSnap.data();
+
+                    // Log the auction data to see its structure
+                    console.log("Auction Data:", auctionData);
+
                     document.getElementById("item-title").textContent = auctionData.title;
                     document.getElementById("item-description").textContent = auctionData.description;
                     document.getElementById("item-category").textContent = `Category: ${auctionData.category}`;
-                    currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
+
+                    // Get starting bid and current bid
+                    const startingBid = auctionData.startingBid;  // Assuming startingBid is in the data
+                    let currentBid = auctionData.currentBid;
+
+                    console.log("Starting Bid:", startingBid);
+                    console.log("Current Bid:", currentBid);
+
+                    // If currentBid is not set or less than the startingBid, set it to the startingBid
+                    if (startingBid && (isNaN(currentBid) || currentBid < startingBid)) {
+                        currentBid = startingBid;
+                    }
+
+                    // Display the current bid
+                    if (currentBid && !isNaN(currentBid)) {
+                        currentBidElement.textContent = `Current Bid: $${currentBid}`;
+                    } else {
+                        currentBidElement.textContent = `Current Bid: Not set yet`;
+                    }
 
                     // Display time left
                     const endTime = auctionData.endTime.toDate(); // Convert Firestore timestamp to JS Date
