@@ -5,16 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Item 1 - Place Your Bid</title>
     <style>
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            color: #003366;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #003366;
+            color: white;
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
         }
         header {
-            background-color: #003366;
+             background-color: #003366;
             color: white;
             padding: 10px 20px;
             text-align: center;
+            position: relative; /* Add this for button positioning */
         }
         .container {
             padding: 20px;
@@ -61,6 +81,8 @@
 </head>
 <body>
     <header>
+        <a href="index.html">
+            <button class="back-button">← Back to Listings</button>
         <h1>Bid on Item 1</h1>
     </header>
     <div class="container">
