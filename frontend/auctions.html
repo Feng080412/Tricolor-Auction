@@ -89,7 +89,7 @@
     <!-- Firebase Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDLOo7mTzXeGXbceckEBSU92SV7KWOK6pw",
@@ -119,12 +119,13 @@
                     const auctionData = docSnap.data();
                     document.getElementById("item-title").textContent = auctionData.title;
                     document.getElementById("item-description").textContent = auctionData.description;
-                    document.getElementById("item-category").textContent = `Category: ${auctionData.category}`;
-                    currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
+                    document.getElementById("item-category").textContent = Category: ${auctionData.category};
+                    currentBidElement.textContent = Current Bid: $${auctionData.currentBid};
 
                     // Display time left
                     const endTime = auctionData.endTime.toDate(); // Convert Firestore timestamp to JS Date
                     updateTimeLeft(endTime);
+
                 } else {
                     console.log("No such document!");
                 }
@@ -145,7 +146,7 @@
             const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
             
-            timeLeftElement.textContent = `Time Left: ${hours}:${minutes}:${seconds}`;
+            timeLeftElement.textContent = Time Left: ${hours}:${minutes}:${seconds};
             
             // Update every second
             setTimeout(() => updateTimeLeft(endTime), 1000);
@@ -153,32 +154,20 @@
 
         const placeBid = async () => {
             const bidAmount = parseInt(bidAmountInput.value);
-            if (isNaN(bidAmount)) {
+            if (isNaN(bidAmount) || bidAmount < parseInt(currentBidElement.textContent.split("$")[1]) + 5) {
                 alert("Please enter a valid bid amount!");
                 return;
             }
 
             try {
-                const auctionSnap = await getDoc(auctionRef);
-                if (auctionSnap.exists()) {
-                    const auctionData = auctionSnap.data();
-                    const currentBid = auctionData.currentBid;
-
-                    if (bidAmount < currentBid + 5) {
-                        alert("Your bid must be at least $5 higher than the current bid!");
-                        return;
-                    }
-
-                    // Update current bid in Firestore
-                    await updateDoc(auctionRef, {
-                        currentBid: bidAmount,
-                        lastBidTimestamp: new Date()
-                    });
-
-                    currentBidElement.textContent = `Current Bid: $${bidAmount}`;
-                    bidUpdatedMsg.style.display = "block";
-                    bidAmountInput.value = bidAmount + 5;
-                }
+                // Update current bid in Firestore
+                await updateDoc(auctionRef, {
+                    currentBid: bidAmount,
+                    lastBidTimestamp: new Date()
+                });
+                currentBidElement.textContent = Current Bid: $${bidAmount};
+                bidUpdatedMsg.style.display = "block";
+                bidAmountInput.value = bidAmount + 5;
             } catch (error) {
                 console.error("Error placing bid: ", error);
             }
@@ -189,15 +178,6 @@
 
         // Handle placing a bid
         document.getElementById("place-bid-btn").addEventListener("click", placeBid);
-
-        // Listen for real-time updates to the auction data
-        onSnapshot(auctionRef, (doc) => {
-            const auctionData = doc.data();
-            if (auctionData) {
-                currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
-                // Update other elements if needed
-            }
-        });
     </script>
 </body>
 </html>
