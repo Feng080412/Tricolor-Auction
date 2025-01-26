@@ -5,62 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Auction Item</title>
     <style>
-        /* Styles for the form */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-
-        header {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 10px 0;
-        }
-
-        .container {
-            width: 80%;
-            margin: 20px auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .form-group button {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .form-group button:hover {
-            background-color: #218838;
-        }
+        /* Your CSS styles here */
     </style>
 </head>
 <body>
@@ -108,50 +53,53 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-    
-    <script>
-        // Firebase configuration (replace with your own Firebase project credentials)
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore(app);
+    <!-- Firebase config and form handling -->
+    <script type="module">
+      const firebaseConfig = {
+        apiKey: "AIzaSyDLOo7mTzXeGXbceckEBSU92SV7KWOK6pw",
+        authDomain: "tricolour-auctions.firebaseapp.com",
+        projectId: "tricolour-auctions",
+        storageBucket: "tricolour-auctions.firebasestorage.app",
+        messagingSenderId: "770024392931",
+        appId: "1:770024392931:web:52fd65be345288f9159dd6",
+        measurementId: "G-78ZV7D00GY"
+      };
 
-        // Handle form submission
-        document.getElementById('auction-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
+      // Initialize Firebase
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+      import { getFirestore, collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-            // Get form data
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
-            const category = document.getElementById('category').value;
-            const startingBid = parseFloat(document.getElementById('starting_bid').value);
-            const endTime = new Date(document.getElementById('end_time').value);
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
 
-            // Save item to Firestore
-            try {
-                await db.collection('auctions').add({
-                    title: title,
-                    description: description,
-                    category: category,
-                    startingBid: startingBid,
-                    endTime: endTime
-                });
-                alert('Item added successfully!');
-                // Redirect to auctions.html after successful submission
-                window.location.href = 'auctions.html'; // Updated to auctions.html
-            } catch (error) {
-                console.error('Error adding item:', error);
-                alert('Failed to add item!');
-            }
-        });
+      // Handle form submission
+      document.getElementById('auction-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Get form data
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const category = document.getElementById('category').value;
+        const startingBid = parseFloat(document.getElementById('starting_bid').value);
+        const endTime = Timestamp.fromDate(new Date(document.getElementById('end_time').value));
+
+        // Save item to Firestore
+        try {
+          await addDoc(collection(db, 'auctions'), {
+            title: title,
+            description: description,
+            category: category,
+            startingBid: startingBid,
+            endTime: endTime
+          });
+          alert('Item added successfully!');
+          window.location.href = 'auctions.html'; // Redirect to auctions page
+        } catch (error) {
+          console.error('Error adding item:', error);
+          alert('Failed to add item!');
+        }
+      });
     </script>
 </body>
 </html>
