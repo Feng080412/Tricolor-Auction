@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bid on Auction Item</title>
+    <title>Item 1 - Place Your Bid</title>
     <style>
-        /* Your styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -58,21 +57,27 @@
             color: #990000;
             font-weight: bold;
         }
+        .time-left {
+            font-size: 16px;
+            margin-top: 10px;
+        }
     </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 <body>
     <header>
-        <h1>Bid on Auction Item</h1>
+        <h1>Bid on Item 1</h1>
     </header>
     <div class="container">
         <div class="item-details">
-            <img id="item-image" src="item1.jpg" alt="Item">
+            <img id="item-image" src="item1.jpg" alt="Item 1">
             <div>
-                <h2 id="item-title">Item Title</h2>
-                <p id="item-description">Description of item. Highlight its features and why it's valuable!</p>
-                <p id="item-category">Category: Example Category</p>
+                <h2 id="item-title">Item 1 Title</h2>
+                <p id="item-description">Description of item 1. Highlight its features and why it's valuable!</p>
                 <p class="current-bid" id="current-bid">Current Bid: $50</p>
-                <p id="time-left">Time Left: 01:23:45</p>
+                <p class="time-left" id="time-left">Time Left: 01:23:45</p>
             </div>
         </div>
         <div class="bid-section">
@@ -86,11 +91,8 @@
         </div>
     </div>
 
-    <!-- Firebase Integration -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
+    <script>
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDLOo7mTzXeGXbceckEBSU92SV7KWOK6pw",
             authDomain: "tricolour-auctions.firebaseapp.com",
@@ -101,31 +103,38 @@
             measurementId: "G-78ZV7D00GY"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore(app);
 
         const auctionId = new URLSearchParams(window.location.search).get('id'); // Extract auction ID from URL
-        const auctionRef = doc(db, "auctions", auctionId);
+        const auctionRef = db.collection("auctions").doc(auctionId); // Reference to auction document
 
         const currentBidElement = document.querySelector("#current-bid");
         const bidAmountInput = document.getElementById("bid-amount");
         const bidUpdatedMsg = document.getElementById("bid-updated-msg");
         const timeLeftElement = document.getElementById("time-left");
 
+        // Fetch auction item from Firestore
         const fetchAuctionItem = async () => {
             try {
-                const docSnap = await getDoc(auctionRef);
-                if (docSnap.exists()) {
+                const docSnap = await auctionRef.get();
+                if (docSnap.exists) {
                     const auctionData = docSnap.data();
+                    console.log("Fetched auction data:", auctionData); // Check the structure of data
+
+                    // Update item details
                     document.getElementById("item-title").textContent = auctionData.title;
                     document.getElementById("item-description").textContent = auctionData.description;
-                    document.getElementById("item-category").textContent = `Category: ${auctionData.category}`;
-                    currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
+                    document.getElementById("item-image").src = auctionData.imageURL || "item1.jpg"; // Replace with actual image URL
+
+                    // Set initial bid
+                    const currentBid = auctionData.currentBid || 0;
+                    currentBidElement.textContent = `Current Bid: $${currentBid}`;
+                    bidAmountInput.value = currentBid + 5;
 
                     // Display time left
                     const endTime = auctionData.endTime.toDate(); // Convert Firestore timestamp to JS Date
                     updateTimeLeft(endTime);
-
                 } else {
                     console.log("No such document!");
                 }
@@ -134,9 +143,10 @@
             }
         };
 
+        // Update countdown timer
         const updateTimeLeft = (endTime) => {
             const now = new Date();
-            const timeDiff = endTime - now; // Difference in milliseconds
+            const timeDiff = endTime - now;
             if (timeDiff <= 0) {
                 timeLeftElement.textContent = "Auction has ended!";
                 return;
@@ -145,39 +155,43 @@
             const hours = Math.floor(timeDiff / (1000 * 60 * 60));
             const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-            
+
             timeLeftElement.textContent = `Time Left: ${hours}:${minutes}:${seconds}`;
-            
+
             // Update every second
             setTimeout(() => updateTimeLeft(endTime), 1000);
         };
 
-        const placeBid = async () => {
+        // Place a bid
+        const placeBidButton = document.getElementById("place-bid-btn");
+        placeBidButton.addEventListener("click", async () => {
             const bidAmount = parseInt(bidAmountInput.value);
-            if (isNaN(bidAmount) || bidAmount < parseInt(currentBidElement.textContent.split("$")[1]) + 5) {
+            if (isNaN(bidAmount) || bidAmount <= (parseInt(currentBidElement.textContent.replace('Current Bid: $', '')))) {
                 alert("Please enter a valid bid amount!");
                 return;
             }
 
             try {
-                // Update current bid in Firestore
-                await updateDoc(auctionRef, {
+                // Update bid in Firestore
+                await auctionRef.update({
                     currentBid: bidAmount,
-                    lastBidTimestamp: new Date()
+                    bids: firebase.firestore.FieldValue.arrayUnion({
+                        bidAmount: bidAmount,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    })
                 });
+
+                // Update the page
                 currentBidElement.textContent = `Current Bid: $${bidAmount}`;
                 bidUpdatedMsg.style.display = "block";
                 bidAmountInput.value = bidAmount + 5;
             } catch (error) {
                 console.error("Error placing bid: ", error);
             }
-        };
+        });
 
         // Fetch auction item data on page load
         fetchAuctionItem();
-
-        // Handle placing a bid
-        document.getElementById("place-bid-btn").addEventListener("click", placeBid);
     </script>
 </body>
 </html>
