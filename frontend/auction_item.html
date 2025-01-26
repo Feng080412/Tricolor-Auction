@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bid on Auction Item</title>
+    <title>Item 1 - Place Your Bid</title>
     <style>
-        /* Your styles */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -62,17 +61,16 @@
 </head>
 <body>
     <header>
-        <h1>Bid on Auction Item</h1>
+        <h1>Bid on Item 1</h1>
     </header>
     <div class="container">
         <div class="item-details">
-            <img id="item-image" src="item1.jpg" alt="Item">
+            <img src="item1.jpg" alt="Item 1">
             <div>
-                <h2 id="item-title">Item Title</h2>
-                <p id="item-description">Description of item. Highlight its features and why it's valuable!</p>
-                <p id="item-category">Category: Example Category</p>
-                <p class="current-bid" id="current-bid">Current Bid: $50</p>
-                <p id="time-left">Time Left: 01:23:45</p>
+                <h2>Item 1 Title</h2>
+                <p>Description of item 1. Highlight its features and why it's valuable!</p>
+                <p class="current-bid">Current Bid: $50</p>
+                <p>Time Left: 01:23:45</p>
             </div>
         </div>
         <div class="bid-section">
@@ -86,116 +84,109 @@
         </div>
     </div>
 
-    <!-- Firebase Integration -->
+    <!-- Add Supabase client -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+        import { supabase } from './supabase.js';
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm'
+        
+        // Initialize Supabase
+        const supabase = createClient(
+            'https://tjslxldzjccclliewhzs.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqc2x4bGR6amNjY2xsaWV3aHpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc4NjI5MzQsImV4cCI6MjA1MzQzODkzNH0.LH575sOFw-ipKgrCnbfVGOiYt1pyEF-cLtQDgA4Vqqg'
+        );
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLOo7mTzXeGXbceckEBSU92SV7KWOK6pw",
-            authDomain: "tricolour-auctions.firebaseapp.com",
-            projectId: "tricolour-auctions",
-            storageBucket: "tricolour-auctions.firebasestorage.app",
-            messagingSenderId: "770024392931",
-            appId: "1:770024392931:web:52fd65be345288f9159dd6",
-            measurementId: "G-78ZV7D00GY"
-        };
+        // Get current item ID (you'll need to implement proper ID handling)
+        const itemId = 'ITEM_ID'; // Replace with actual item ID from URL/database
+        
+        let currentBid = 50;
+        const bidIncrement = 5;
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            const placeBidButton = document.getElementById("place-bid-btn");
+            const bidAmountInput = document.getElementById("bid-amount");
+            const currentBidElement = document.querySelector(".current-bid");
+            const bidUpdatedMsg = document.getElementById("bid-updated-msg");
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+            // Fetch initial bid data
+            const { data: itemData } = await supabase
+                .from('items')
+                .select('current_bid')
+                .eq('id', itemId)
+                .single();
 
-        const auctionId = new URLSearchParams(window.location.search).get('id'); // Extract auction ID from URL
-        const auctionRef = doc(db, "auctions", auctionId);
+            if (itemData) {
+                currentBid = itemData.current_bid;
+                updateBidDisplay();
+            }
 
-        const currentBidElement = document.querySelector("#current-bid");
-        const bidAmountInput = document.getElementById("bid-amount");
-        const bidUpdatedMsg = document.getElementById("bid-updated-msg");
-        const timeLeftElement = document.getElementById("time-left");
+            // Real-time updates
+            const channel = supabase
+                .channel('bids')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'bids',
+                    filter: `item_id=eq.${itemId}`
+                }, (payload) => {
+                    currentBid = payload.new.amount;
+                    updateBidDisplay();
+                    showSuccessMessage('New bid placed!');
+                })
+                .subscribe();
 
-        const fetchAuctionItem = async () => {
-            try {
-                const docSnap = await getDoc(auctionRef);
-                if (docSnap.exists()) {
-                    const auctionData = docSnap.data();
-                    document.getElementById("item-title").textContent = auctionData.title;
-                    document.getElementById("item-description").textContent = auctionData.description;
-                    document.getElementById("item-category").textContent = `Category: ${auctionData.category}`;
-                    currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
-
-                    // Display time left
-                    const endTime = auctionData.endTime.toDate(); // Convert Firestore timestamp to JS Date
-                    updateTimeLeft(endTime);
-                } else {
-                    console.log("No such document!");
+            placeBidButton.addEventListener("click", async () => {
+                const bidAmount = parseInt(bidAmountInput.value);
+                
+                if (isNaN(bidAmount) || bidAmount < currentBid + bidIncrement) {
+                    alert(`Bid must be at least $${currentBid + bidIncrement}!`);
+                    return;
                 }
-            } catch (error) {
-                console.error("Error getting auction item: ", error);
-            }
-        };
 
-        const updateTimeLeft = (endTime) => {
-            const now = new Date();
-            const timeDiff = endTime - now; // Difference in milliseconds
-            if (timeDiff <= 0) {
-                timeLeftElement.textContent = "Auction has ended!";
-                return;
-            }
-
-            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-            
-            timeLeftElement.textContent = `Time Left: ${hours}:${minutes}:${seconds}`;
-            
-            // Update every second
-            setTimeout(() => updateTimeLeft(endTime), 1000);
-        };
-
-        const placeBid = async () => {
-            const bidAmount = parseInt(bidAmountInput.value);
-            if (isNaN(bidAmount)) {
-                alert("Please enter a valid bid amount!");
-                return;
-            }
-
-            try {
-                const auctionSnap = await getDoc(auctionRef);
-                if (auctionSnap.exists()) {
-                    const auctionData = auctionSnap.data();
-                    const currentBid = auctionData.currentBid;
-
-                    if (bidAmount < currentBid + 5) {
-                        alert("Your bid must be at least $5 higher than the current bid!");
-                        return;
-                    }
-
-                    // Update current bid in Firestore
-                    await updateDoc(auctionRef, {
-                        currentBid: bidAmount,
-                        lastBidTimestamp: new Date()
-                    });
-
-                    currentBidElement.textContent = `Current Bid: $${bidAmount}`;
-                    bidUpdatedMsg.style.display = "block";
-                    bidAmountInput.value = bidAmount + 5;
+                // Check user authentication
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    alert('Please login to place a bid!');
+                    return;
                 }
-            } catch (error) {
-                console.error("Error placing bid: ", error);
+
+                try {
+                    // Insert new bid
+                    const { error } = await supabase
+                        .from('bids')
+                        .insert([{
+                            item_id: itemId,
+                            user_id: user.id,
+                            amount: bidAmount
+                        }]);
+
+                    if (error) throw error;
+
+                    // Update item's current bid
+                    const { error: updateError } = await supabase
+                        .from('items')
+                        .update({ current_bid: bidAmount })
+                        .eq('id', itemId);
+
+                    if (updateError) throw updateError;
+
+                    showSuccessMessage('Bid placed successfully!');
+                } catch (error) {
+                    alert(`Error placing bid: ${error.message}`);
+                }
+            });
+
+            function updateBidDisplay() {
+                currentBidElement.textContent = `Current Bid: $${currentBid}`;
+                bidAmountInput.min = currentBid + bidIncrement;
+                bidAmountInput.value = currentBid + bidIncrement;
             }
-        };
 
-        // Fetch auction item data on page load
-        fetchAuctionItem();
-
-        // Handle placing a bid
-        document.getElementById("place-bid-btn").addEventListener("click", placeBid);
-
-        // Listen for real-time updates to the auction data
-        onSnapshot(auctionRef, (doc) => {
-            const auctionData = doc.data();
-            if (auctionData) {
-                currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
-                // Update other elements if needed
+            function showSuccessMessage(message) {
+                bidUpdatedMsg.textContent = message;
+                bidUpdatedMsg.style.display = "block";
+                setTimeout(() => {
+                    bidUpdatedMsg.style.display = "none";
+                }, 3000);
             }
         });
     </script>
