@@ -3,75 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auction Listings</title>
+    <title>Bid on Auction Item</title>
     <style>
-        .auction-item {
-            border: 1px solid #ddd;
-            padding: 16px;
-            margin: 10px;
-            background-color: white;
-            border-radius: 8px;
-        }
-
-        .details {
+        /* Your styles */
+        body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
         }
-
-        .details h3 {
-            font-size: 1.2em;
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        .container {
+            padding: 20px;
+        }
+        .item-details {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .item-details img {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        .bid-section {
+            margin-top: 20px;
+        }
+        .bid-section h3 {
             margin-bottom: 10px;
         }
-
-        .details p {
-            margin: 5px 0;
+        .bid-section input {
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+            width: 150px;
         }
-
-        .details .current-bid {
-            color: green;
+        .bid-section button {
+            padding: 10px 20px;
+            background-color: #003366;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .bid-section button:hover {
+            background-color: #001f4d;
+        }
+        .current-bid {
+            color: #990000;
             font-weight: bold;
         }
-
-        .details .countdown {
+        .countdown {
             color: red;
             font-weight: bold;
-        }
-
-        .auction-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">
-            <img src="Logo_Header.png" alt="Auction Logo">
-        </div>
-        <div class="nav-buttons">
-            <a href="index.html">
-                <button>Home</button>
-            </a>
-            <a href="auctions.html">
-                <button>Auctions</button>
-            </a>
-            <a href="add_item.html">
-                <button>Sell an Item</button>
-            </a>
-            <button>Categories</button>
-        </div>
+        <h1>Bid on Auction Item</h1>
     </header>
-
-    <main>
-        <section class="auction-grid" id="auctionGrid">
-            <!-- Auction items will be dynamically inserted here -->
-        </section>
-    </main>
+    <div class="container">
+        <div class="item-details">
+            <img id="item-image" src="item1.jpg" alt="Item">
+            <div>
+                <h2 id="item-title">Item Title</h2>
+                <p id="item-description">Description of item. Highlight its features and why it's valuable!</p>
+                <p id="item-category">Category: Example Category</p>
+                <p class="current-bid" id="current-bid">Current Bid: $50.00</p>
+                <p id="time-left" class="countdown">Time Left: 01:23:45</p>
+            </div>
+        </div>
+        <div class="bid-section">
+            <h3>Place Your Bid</h3>
+            <p>Minimum increment: $5</p>
+            <input type="number" id="bid-amount" min="55" step="5" placeholder="Enter your bid">
+            <button id="place-bid-btn">Place Bid</button>
+        </div>
+        <div id="bid-updated-msg" style="margin-top: 20px; color: green; display: none;">
+            Your bid has been placed successfully!
+        </div>
+    </div>
 
     <!-- Firebase Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDLOo7mTzXeGXbceckEBSU92SV7KWOK6pw",
@@ -86,9 +108,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const auctionGrid = document.getElementById("auctionGrid");
+        const auctionId = new URLSearchParams(window.location.search).get('id'); // Extract auction ID from URL
+        const auctionRef = doc(db, "auctions", auctionId);
 
-        // Calculate time left for the auction
+        const currentBidElement = document.querySelector("#current-bid");
+        const bidAmountInput = document.getElementById("bid-amount");
+        const bidUpdatedMsg = document.getElementById("bid-updated-msg");
+        const timeLeftElement = document.getElementById("time-left");
+
+        // Function to calculate the time left
         const calculateTimeLeft = (endTime) => {
             const now = new Date();
             const diff = endTime - now;
@@ -102,11 +130,11 @@
             return `${hours}h ${minutes}m ${seconds}s`;
         };
 
-        // Start countdown for each auction
-        const startCountdown = (endTime, countdownElement) => {
+        // Start countdown
+        const startCountdown = (endTime) => {
             const updateCountdown = () => {
                 const timeLeft = calculateTimeLeft(endTime);
-                countdownElement.textContent = timeLeft;
+                timeLeftElement.textContent = timeLeft;
 
                 if (timeLeft !== "Auction Ended") {
                     setTimeout(updateCountdown, 1000);
@@ -116,46 +144,75 @@
             updateCountdown();
         };
 
-        // Fetch and display auction items
-        const fetchAuctions = async () => {
+        // Fetch auction item data
+        const fetchAuctionItem = async () => {
             try {
-                const querySnapshot = await getDocs(collection(db, "auctions"));
-                auctionGrid.innerHTML = ""; // Clear existing items
+                const docSnap = await getDoc(auctionRef);
+                if (docSnap.exists()) {
+                    const auctionData = docSnap.data();
+                    document.getElementById("item-title").textContent = auctionData.title;
+                    document.getElementById("item-description").textContent = auctionData.description;
+                    document.getElementById("item-category").textContent = `Category: ${auctionData.category}`;
+                    currentBidElement.textContent = `Current Bid: $${auctionData.startingBid.toFixed(2)}`;
 
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const endTime = data.endTime.toDate(); // Convert Firestore Timestamp to JavaScript Date
-
-                    const auctionItem = document.createElement("div");
-                    auctionItem.classList.add("auction-item");
-                    auctionItem.innerHTML = `
-                        <a href="auction_item.html?id=${doc.id}">
-                            <img src="item1.jpg" alt="${data.title}">
-                        </a>
-                        <div class="details">
-                            <h3>${data.title}</h3>
-                            <p>${data.description}</p>
-                            <p><strong>Category:</strong> ${data.category}</p>
-                            <p class="current-bid">Current Bid: $${data.startingBid.toFixed(2)}</p>
-                            <p class="countdown"></p>
-                            <a href="auction_item.html?id=${doc.id}">
-                                <button>Bid Now</button>
-                            </a>
-                        </div>
-                    `;
-                    auctionGrid.appendChild(auctionItem);
-
-                    // Start the countdown for this auction
-                    const countdownElement = auctionItem.querySelector(".countdown");
-                    startCountdown(endTime, countdownElement);
-                });
+                    // Start the countdown
+                    const endTime = auctionData.endTime.toDate(); // Convert Firestore Timestamp to JS Date
+                    startCountdown(endTime);
+                } else {
+                    console.log("No such document!");
+                }
             } catch (error) {
-                console.error("Error fetching auctions: ", error);
+                console.error("Error getting auction item: ", error);
             }
         };
 
-        // Fetch auctions on page load
-        fetchAuctions();
+        // Place a bid
+        const placeBid = async () => {
+            const bidAmount = parseInt(bidAmountInput.value);
+            if (isNaN(bidAmount)) {
+                alert("Please enter a valid bid amount!");
+                return;
+            }
+
+            try {
+                const auctionSnap = await getDoc(auctionRef);
+                if (auctionSnap.exists()) {
+                    const auctionData = auctionSnap.data();
+                    const currentBid = auctionData.startingBid;
+
+                    if (bidAmount < currentBid + 5) {
+                        alert("Your bid must be at least $5 higher than the current bid!");
+                        return;
+                    }
+
+                    // Update current bid in Firestore
+                    await updateDoc(auctionRef, {
+                        startingBid: bidAmount,
+                        lastBidTimestamp: new Date()
+                    });
+
+                    currentBidElement.textContent = `Current Bid: $${bidAmount.toFixed(2)}`;
+                    bidUpdatedMsg.style.display = "block";
+                    bidAmountInput.value = bidAmount + 5;
+                }
+            } catch (error) {
+                console.error("Error placing bid: ", error);
+            }
+        };
+
+        // Fetch auction item data on page load
+        fetchAuctionItem();
+
+        // Handle placing a bid
+        document.getElementById("place-bid-btn").addEventListener("click", placeBid);
+
+        // Listen for real-time updates to the auction data
+        onSnapshot(auctionRef, (doc) => {
+            const auctionData = doc.data();
+            if (auctionData) {
+                currentBidElement.textContent = `Current Bid: $${auctionData.startingBid.toFixed(2)}`;
+            }
+        });
     </script>
 </body>
 </html>
