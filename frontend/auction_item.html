@@ -119,8 +119,8 @@
                     const auctionData = docSnap.data();
                     document.getElementById("item-title").textContent = auctionData.title;
                     document.getElementById("item-description").textContent = auctionData.description;
-                    document.getElementById("item-category").textContent = Category: ${auctionData.category};
-                    currentBidElement.textContent = Current Bid: $${auctionData.currentBid};
+                    document.getElementById("item-category").textContent = `Category: ${auctionData.category}`;
+                    currentBidElement.textContent = `Current Bid: $${auctionData.currentBid}`;
 
                     // Display time left
                     const endTime = auctionData.endTime.toDate(); // Convert Firestore timestamp to JS Date
@@ -146,7 +146,7 @@
             const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
             
-            timeLeftElement.textContent = Time Left: ${hours}:${minutes}:${seconds};
+            timeLeftElement.textContent = `Time Left: ${hours}:${minutes}:${seconds}`;
             
             // Update every second
             setTimeout(() => updateTimeLeft(endTime), 1000);
@@ -165,7 +165,7 @@
                     currentBid: bidAmount,
                     lastBidTimestamp: new Date()
                 });
-                currentBidElement.textContent = Current Bid: $${bidAmount};
+                currentBidElement.textContent = `Current Bid: $${bidAmount}`;
                 bidUpdatedMsg.style.display = "block";
                 bidAmountInput.value = bidAmount + 5;
             } catch (error) {
